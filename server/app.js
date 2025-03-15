@@ -8,7 +8,11 @@ const app = express();
 
 // CORS configuration for Vercel deployment - fixed the origin URL
 app.use(cors({
-    origin: ['https://zidio-kanban-project.vercel.app', 'http://localhost:3000'], // Corrected origin without path
+    origin: [
+        'https://kanban-project-phi.vercel.app', 
+        'https://zidio-kanban-project.vercel.app', 
+        'http://localhost:3000'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
