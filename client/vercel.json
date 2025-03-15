@@ -1,0 +1,15 @@
+{
+    "framework": "create-react-app",
+    "routes": [
+      { "src": "/static/(.*)", "dest": "/static/$1" },
+      { "src": "/favicon.ico", "dest": "/favicon.ico" },
+      { "src": "/manifest.json", "dest": "/manifest.json" },
+      { "src": "/logo192.png", "dest": "/logo192.png" },
+      { "src": "/logo512.png", "dest": "/logo512.png" },
+      { "src": "/(.*)", "dest": "/index.html" }
+    ],
+    "env": {
+      "REACT_APP_API_URL": "https://kanban-project-phi.vercel.app/api/v1"
+    }
+  }
+  
