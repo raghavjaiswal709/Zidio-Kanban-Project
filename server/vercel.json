@@ -20,10 +20,6 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "app.js": {
-      "maxDuration": 60
-    }
   }
+
 }
