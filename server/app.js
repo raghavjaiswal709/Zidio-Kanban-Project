@@ -20,18 +20,18 @@ app.use(cors({
 }));
 
 // Additional CORS headers for all responses
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://zidio-kanban-project.vercel.app');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
+// app.use((req, res, next) => {
+//     res.header('Access-Control-Allow-Origin', 'https://zidio-kanban-project.vercel.app');
+//     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+//     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+//     res.header('Access-Control-Allow-Credentials', 'true');
     
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-        return res.status(204).send();
-    }
-    next();
-});
+//     // Handle preflight requests
+//     if (req.method === 'OPTIONS') {
+//         return res.status(204).send();
+//     }
+//     next();
+// });
 
 // Debug middleware to log requests
 app.use((req, res, next) => {
