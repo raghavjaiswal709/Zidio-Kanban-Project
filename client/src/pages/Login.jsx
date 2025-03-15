@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography, Paper, alpha } from '@mui/material'
+import { Box, Button, TextField, Typography, Paper, alpha, Alert } from '@mui/material'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import LoadingButton from '@mui/lab/LoadingButton'
@@ -17,11 +17,13 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [usernameErrText, setUsernameErrText] = useState('')
   const [passwordErrText, setPasswordErrText] = useState('')
+  const [generalError, setGeneralError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setUsernameErrText('')
     setPasswordErrText('')
+    setGeneralError('')
 
     const data = new FormData(e.target)
     const username = data.get('username').trim()
@@ -44,19 +46,33 @@ const Login = () => {
 
     try {
       const res = await authApi.login({ username, password })
-      setLoading(false)
       localStorage.setItem('token', res.token)
       navigate('/')
     } catch (err) {
-      const errors = err.data.errors
-      errors.forEach(e => {
-        if (e.param === 'username') {
-          setUsernameErrText(e.msg)
-        }
-        if (e.param === 'password') {
-          setPasswordErrText(e.msg)
-        }
-      })
+      console.error("Login error:", err);
+      
+      // Handle different error structures
+      if (err && err.data && err.data.errors && Array.isArray(err.data.errors)) {
+        // Standard validation errors from the backend
+        err.data.errors.forEach(e => {
+          if (e.param === 'username') {
+            setUsernameErrText(e.msg)
+          }
+          if (e.param === 'password') {
+            setPasswordErrText(e.msg)
+          }
+        })
+      } else if (err && err.status === 401) {
+        // Authentication error
+        setGeneralError('Invalid username or password')
+      } else if (err && err.status >= 500) {
+        // Server error
+        setGeneralError('Server error. Please try again later.')
+      } else {
+        // Unknown error format or network error
+        setGeneralError('Unable to connect to the server. Please check your connection.')
+      }
+    } finally {
       setLoading(false)
     }
   }
@@ -105,6 +121,15 @@ const Login = () => {
           onSubmit={handleSubmit}
           noValidate
         >
+          {generalError && (
+            <Alert 
+              severity="error" 
+              sx={{ mb: 2, backgroundColor: alpha('#f44336', 0.1), color: '#f44336' }}
+            >
+              {generalError}
+            </Alert>
+          )}
+          
           <TextField
             margin='normal'
             required
@@ -185,25 +210,43 @@ const Login = () => {
           >
             Sign In
           </LoadingButton>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 2 }}>
+            <Button
+              component={Link}
+              to='/forgot-password'
+              sx={{ 
+                textTransform: 'none',
+                color: theme.lightBeige,
+                '&:hover': {
+                  color: theme.warmBrown,
+                  backgroundColor: 'transparent'
+                },
+                fontSize: '0.85rem',
+                padding: 0
+              }}
+            >
+              Forgot password?
+            </Button>
+            
+            <Button
+              component={Link}
+              to='/signup'
+              sx={{ 
+                textTransform: 'none',
+                color: theme.lightBeige,
+                '&:hover': {
+                  color: theme.warmBrown,
+                  backgroundColor: 'transparent'
+                },
+                fontSize: '0.85rem',
+                padding: 0
+              }}
+            >
+              Don't have an account? Sign up
+            </Button>
+          </Box>
         </Box>
-        <Button
-          component={Link}
-          to='/signup'
-          sx={{ 
-            textTransform: 'none',
-            color: theme.lightBeige,
-            display: 'block',
-            textAlign: 'center',
-            margin: '0 auto',
-            '&:hover': {
-              color: theme.warmBrown,
-              backgroundColor: 'transparent'
-            },
-            fontSize: '0.9rem'
-          }}
-        >
-          Don't have an account? Sign up
-        </Button>
       </Paper>
     </Box>
   )
