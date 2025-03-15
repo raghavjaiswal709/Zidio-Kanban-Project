@@ -17,5 +17,13 @@
         "Access-Control-Allow-Credentials": "true"
       }
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "app.js": {
+      "maxDuration": 60
+    }
+  }
 }
