@@ -12,30 +12,14 @@ import Home from './pages/Home'
 import Board from './pages/Board'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import { useSelector, useDispatch } from 'react-redux'
-import { useEffect } from 'react'
-import { setUser } from './redux/features/userSlice'
-import authUtils from './utils/authUtils'
+import UserManagement from './components/admin/UserManagement';
+import AssignedTasks from './pages/AssignedTasks';
+
 
 function App() {
-  const dispatch = useDispatch()
-  const { darkMode } = useSelector((state) => state.darkMode)
-
   const theme = createTheme({
-    palette: { mode: darkMode ? 'dark' : 'light' }
+    palette: { mode: 'dark' }
   })
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const user = await authUtils.isAuthenticated()
-      if (user) {
-        dispatch(setUser(user))
-      }
-    }
-    checkAuth()
-  }, [dispatch])
 
   return (
     <ThemeProvider theme={theme}>
@@ -45,18 +29,18 @@ function App() {
           <Route path='/' element={<AuthLayout />}>
             <Route path='login' element={<Login />} />
             <Route path='signup' element={<Signup />} />
-            <Route path='forgot-password' element={<ForgotPassword />} />
-            <Route path='reset-password/:token' element={<ResetPassword />} />
           </Route>
           <Route path='/' element={<AppLayout />}>
             <Route index element={<Home />} />
             <Route path='boards' element={<Home />} />
             <Route path='boards/:boardId' element={<Board />} />
+            <Route path="admin/users" element={<UserManagement />} />
+            <Route path="assigned-tasks" element={<AssignedTasks />} />
           </Route>
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

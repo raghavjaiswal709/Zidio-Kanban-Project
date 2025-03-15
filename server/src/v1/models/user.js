@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const { schemaOptions } = require('./modelOptions')
-const crypto = require('crypto')
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -13,36 +12,14 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false
   },
-  email: {
+  role: {
     type: String,
-    required: true,
-    unique: true
-  },
-  resetPasswordToken: {
-    type: String,
-    select: false
-  },
-  resetPasswordExpire: {
-    type: Date,
-    select: false
+    enum: ['admin', 'assignee'],
+    default: 'assignee'
   }
-}, schemaOptions)
+}, schemaOptions);
 
-// Method to generate password reset token
-userSchema.methods.createPasswordResetToken = function() {
-  // Generate token
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  
-  // Hash token and set to resetPasswordToken field
-  this.resetPasswordToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-    
-  // Set expire time (10 minutes)
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-  
-  return resetToken;
-};
 
-module.exports = mongoose.model('User', userSchema)
+// module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('User', userSchema, 'testuser')
+
