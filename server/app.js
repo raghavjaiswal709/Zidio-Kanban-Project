@@ -41,6 +41,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Root endpoint to verify server is running
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'Hello! Kanban API Server is running correctly.',
+        status: 'online',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Test endpoint to verify API is working
 app.get('/api/test', (req, res) => {
     res.json({ 
