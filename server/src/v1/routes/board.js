@@ -4,6 +4,7 @@ const validation = require('../handlers/validation')
 const tokenHandler = require('../handlers/tokenHandler')
 const boardController = require('../controllers/board')
 
+// Basic routes accessible to all authenticated users
 router.post(
   '/',
   tokenHandler.verifyToken,
@@ -34,6 +35,7 @@ router.put(
   boardController.updateFavouritePosition
 )
 
+// Routes that require board ownership or admin privileges
 router.get(
   '/:boardId',
   param('boardId').custom(value => {
@@ -43,6 +45,7 @@ router.get(
   }),
   validation.validate,
   tokenHandler.verifyToken,
+  validation.isBoardOwnerOrAdmin,
   boardController.getOne
 )
 
@@ -55,6 +58,7 @@ router.put(
   }),
   validation.validate,
   tokenHandler.verifyToken,
+  validation.isBoardOwnerOrAdmin,
   boardController.update
 )
 
@@ -67,8 +71,8 @@ router.delete(
   }),
   validation.validate,
   tokenHandler.verifyToken,
+  validation.isBoardOwnerOrAdmin,
   boardController.delete
 )
-
 
 module.exports = router

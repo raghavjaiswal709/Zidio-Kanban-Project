@@ -4,6 +4,14 @@ const tokenHandler = require('../handlers/tokenHandler')
 const validation = require('../handlers/validation')
 const taskController = require('../controllers/task')
 
+// Route to get tasks assigned to current user
+router.get(
+  '/assigned',
+  tokenHandler.verifyToken,
+  taskController.getAssignedTasks
+)
+
+// Create task - accessible to all authenticated users
 router.post(
   '/',
   param('boardId').custom(value => {
@@ -21,6 +29,7 @@ router.post(
   taskController.create
 )
 
+// Update task position - accessible to all authenticated users
 router.put(
   '/update-position',
   param('boardId').custom(value => {
@@ -32,7 +41,17 @@ router.put(
   tokenHandler.verifyToken,
   taskController.updatePosition
 )
-
+router.get(
+  '/assigned',
+  tokenHandler.verifyToken,
+  taskController.getAssignedTasks
+)
+router.post(
+  '/boards/:boardId',
+  // ...existing middleware
+  taskController.create
+)
+// Manage specific task - requires assignee or admin privileges
 router.delete(
   '/:taskId',
   param('boardId').custom(value => {
@@ -47,6 +66,7 @@ router.delete(
   }),
   validation.validate,
   tokenHandler.verifyToken,
+  validation.isTaskAssigneeOrAdmin,
   taskController.delete
 )
 
@@ -64,6 +84,7 @@ router.put(
   }),
   validation.validate,
   tokenHandler.verifyToken,
+  validation.isTaskAssigneeOrAdmin,
   taskController.update
 )
 

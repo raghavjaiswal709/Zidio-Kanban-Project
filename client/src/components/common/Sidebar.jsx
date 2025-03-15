@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Box, Drawer, IconButton, List, ListItem, ListItemButton, Typography, alpha } from '@mui/material'
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined'
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import assets from '../../assets/index'
 import { useEffect, useState } from 'react'
 import boardApi from '../../api/boardApi'
@@ -26,6 +26,7 @@ const Sidebar = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { boardId } = useParams()
+  const location = useLocation()
   const [activeIndex, setActiveIndex] = useState(0)
 
   const sidebarWidth = 250
@@ -132,6 +133,84 @@ const Sidebar = () => {
         <Box sx={{ paddingTop: '10px' }} />
         <FavouriteList />
         <Box sx={{ paddingTop: '10px' }} />
+        
+        {/* Admin Section */}
+        {user.role === 'admin' && (
+          <>
+            <ListItem>
+              <Box sx={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <Typography variant='body2' fontWeight='700' color={theme.darkGrey}>
+                  Admin
+                </Typography>
+              </Box>
+            </ListItem>
+            
+            <ListItemButton
+              component={Link}
+              to="/admin/users"
+              sx={{
+                pl: '20px',
+                bgcolor: location.pathname === '/admin/users' ? alpha(theme.mediumGreen, 0.2) : 'transparent',
+                color: location.pathname === '/admin/users' ? theme.darkGreen : theme.darkGrey,
+                fontWeight: location.pathname === '/admin/users' ? 700 : 400,
+                '&:hover': {
+                  bgcolor: alpha(theme.mediumGreen, 0.1)
+                }
+              }}
+            >
+              <Box sx={{ mr: 1, fontSize: '1.25rem' }}>👥</Box>
+              <Typography
+                variant='body2'
+                fontWeight={location.pathname === '/admin/users' ? '700' : '400'}
+                sx={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  color: 'inherit'
+                }}
+              >
+                User Management
+              </Typography>
+            </ListItemButton>
+          </>
+        )}
+        
+        {/* Assignee Section */}
+        {user.role === 'assignee' && (
+          <ListItemButton
+            component={Link}
+            to="/assigned-tasks"
+            sx={{
+              pl: '20px',
+              bgcolor: location.pathname === '/assigned-tasks' ? alpha(theme.mediumGreen, 0.2) : 'transparent',
+              color: location.pathname === '/assigned-tasks' ? theme.darkGreen : theme.darkGrey,
+              fontWeight: location.pathname === '/assigned-tasks' ? 700 : 400,
+              '&:hover': {
+                bgcolor: alpha(theme.mediumGreen, 0.1)
+              }
+            }}
+          >
+            <Box sx={{ mr: 1, fontSize: '1.25rem' }}>📋</Box>
+            <Typography
+              variant='body2'
+              fontWeight={location.pathname === '/assigned-tasks' ? '700' : '400'}
+              sx={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'inherit'
+              }}
+            >
+              My Tasks
+            </Typography>
+          </ListItemButton>
+        )}
+        
         <ListItem>
           <Box sx={{
             width: '100%',

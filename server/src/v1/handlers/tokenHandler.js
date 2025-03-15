@@ -1,6 +1,15 @@
 const jsonwebtoken = require('jsonwebtoken')
 const User = require('../models/user')
 
+// Helper function to generate tokens
+exports.generateToken = (user) => {
+  return jsonwebtoken.sign(
+    { id: user._id, role: user.role },
+    process.env.TOKEN_SECRET_KEY,
+    { expiresIn: '24h' }
+  )
+}
+
 const tokenDecode = (req) => {
   const bearerHeader = req.headers['authorization']
   if (bearerHeader) {
@@ -23,10 +32,10 @@ exports.verifyToken = async (req, res, next) => {
   const tokenDecoded = tokenDecode(req)
   if (tokenDecoded) {
     const user = await User.findById(tokenDecoded.id)
-    if (!user) return res.status(401).json('Unathorized')
+    if (!user) return res.status(401).json('Unauthorized')
     req.user = user
     next()
   } else {
-    res.status(401).json('Unathorized')
+    res.status(401).json('Unauthorized')
   }
 }

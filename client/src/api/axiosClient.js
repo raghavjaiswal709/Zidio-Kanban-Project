@@ -2,31 +2,39 @@ import axios from 'axios'
 import queryString from 'query-string'
 
 const baseUrl = 'http://127.0.0.1:5000/api/v1/'
-const getToken = () => localStorage.getItem('token')
 
 const axiosClient = axios.create({
   baseURL: baseUrl,
-  paramsSerializer: params => queryString.stringify({ params })
+  paramsSerializer: params => queryString.stringify(params)
 })
 
-axiosClient.interceptors.request.use(async config => {
+axiosClient.interceptors.request.use(async (config) => {
   return {
     ...config,
     headers: {
       'Content-Type': 'application/json',
-      'authorization': `Bearer ${getToken()}`
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
   }
 })
 
-axiosClient.interceptors.response.use(response => {
+axiosClient.interceptors.response.use((response) => {
   if (response && response.data) return response.data
   return response
-}, err => {
-  if (!err.response) {
-    return alert(err)
+}, (err) => {
+  if (err.response) {
+    // The request was made and the server responded with an error status
+    console.error('API Error Response:', err.response);
+    throw err.response;
+  } else if (err.request) {
+    // The request was made but no response was received
+    console.error('API No Response:', err.request);
+    throw { data: { message: 'No response from server' } };
+  } else {
+    // Something happened in setting up the request
+    console.error('API Request Error:', err.message);
+    throw { data: { message: err.message } };
   }
-  throw err.response
 })
 
 export default axiosClient

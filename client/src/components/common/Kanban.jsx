@@ -295,10 +295,15 @@ const Kanban = props => {
           }
         </Box>
       </DragDropContext>
+      
       <TaskModal
         task={selectedTask}
         boardId={boardId}
-        onClose={() => setSelectedTask(undefined)}
+        open={selectedTask !== undefined}
+        onClose={() => {
+          console.log('Closing task modal');
+          setSelectedTask(undefined);
+        }}
         onUpdate={onUpdateTask}
         onDelete={onDeleteTask}
       />

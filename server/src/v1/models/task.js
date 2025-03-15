@@ -18,6 +18,11 @@ const taskSchema = new Schema({
   },
   position: {
     type: Number
+  },
+  assignee: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, schemaOptions)
 

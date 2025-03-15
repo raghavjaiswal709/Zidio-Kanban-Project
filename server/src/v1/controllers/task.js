@@ -6,11 +6,23 @@ exports.create = async (req, res) => {
   try {
     const section = await Section.findById(sectionId)
     const tasksCount = await Task.find({ section: sectionId }).count()
-    const task = await Task.create({
+    
+    // Create task object with optional assignee
+    const taskData = {
       section: sectionId,
       position: tasksCount > 0 ? tasksCount : 0
-    })
+    }
+    
+    // If assignee provided and user is admin, set the assignee
+    if (req.body.assignee && req.user.role === 'admin') {
+      taskData.assignee = req.body.assignee
+    }
+    
+    const task = await Task.create(taskData)
+    
+    // Populate section and assignee
     task._doc.section = section
+    
     res.status(201).json(task)
   } catch (err) {
     res.status(500).json(err)
@@ -20,16 +32,37 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   const { taskId } = req.params
   try {
+    // Only admin can change assignee
+    if (req.body.assignee !== undefined && req.user.role !== 'admin') {
+      delete req.body.assignee
+    }
+    
     const task = await Task.findByIdAndUpdate(
       taskId,
-      { $set: req.body }
-    )
+      { $set: req.body },
+      { new: true }
+    ).populate('section')
+    
     res.status(200).json(task)
   } catch (err) {
     res.status(500).json(err)
   }
 }
 
+// Get tasks assigned to current user
+exports.getAssignedTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignee: req.user._id })
+      .populate('section')
+      .sort('-updatedAt')
+    
+    res.status(200).json(tasks)
+  } catch (err) {
+    res.status(500).json(err)
+  }
+}
+
+// Existing methods remain the same
 exports.delete = async (req, res) => {
   const { taskId } = req.params
   try {
@@ -47,6 +80,28 @@ exports.delete = async (req, res) => {
     res.status(500).json(err)
   }
 }
+
+// Add this method to your existing task controller
+exports.getAssignedTasks = async (req, res) => {
+  try {
+    // Find all tasks where the current user is the assignee
+    const tasks = await Task.find({ assignee: req.user._id })
+      .populate('section')
+      .sort('-updatedAt')
+    
+    // For each task, fetch the board info
+    for (const task of tasks) {
+      const section = await Section.findById(task.section._id).populate('board')
+      task._doc.board = section.board
+    }
+    
+    res.status(200).json(tasks)
+  } catch (err) {
+    console.error('Error fetching assigned tasks:', err)
+    res.status(500).json(err)
+  }
+}
+
 
 exports.updatePosition = async (req, res) => {
   const {

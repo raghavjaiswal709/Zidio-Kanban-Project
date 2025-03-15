@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography, Paper, alpha } from '@mui/material'
+import { Box, Button, TextField, Typography, Paper, alpha, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import LoadingButton from '@mui/lab/LoadingButton'
@@ -19,33 +19,47 @@ const Signup = () => {
   const [usernameErrText, setUsernameErrText] = useState('')
   const [passwordErrText, setPasswordErrText] = useState('')
   const [confirmPasswordErrText, setConfirmPasswordErrText] = useState('')
+  const [generalError, setGeneralError] = useState('')
+  const [role, setRole] = useState('assignee')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Clear all previous error messages
     setUsernameErrText('')
     setPasswordErrText('')
     setConfirmPasswordErrText('')
+    setGeneralError('')
 
     const data = new FormData(e.target)
     const username = data.get('username').trim()
     const password = data.get('password').trim()
     const confirmPassword = data.get('confirmPassword').trim()
+    const selectedRole = data.get('role')
 
     let err = false
 
+    // Client-side validation
     if (username === '') {
       err = true
       setUsernameErrText('Please fill this field')
+    } else if (username.length < 8) {
+      err = true
+      setUsernameErrText('Username must be at least 8 characters')
     }
+
     if (password === '') {
       err = true
       setPasswordErrText('Please fill this field')
+    } else if (password.length < 8) {
+      err = true
+      setPasswordErrText('Password must be at least 8 characters')
     }
+
     if (confirmPassword === '') {
       err = true
       setConfirmPasswordErrText('Please fill this field')
-    }
-    if (password !== confirmPassword) {
+    } else if (password !== confirmPassword) {
       err = true
       setConfirmPasswordErrText('Confirm password not match')
     }
@@ -55,25 +69,75 @@ const Signup = () => {
     setLoading(true)
 
     try {
+      // Log the data being sent to help debug
+      console.log("Sending signup data:", { username, role: selectedRole })
+      
       const res = await authApi.signup({
-        username, password, confirmPassword
+        username,
+        password,
+        confirmPassword,
+        role: selectedRole
       })
-      setLoading(false)
+      
+      // If successful, store token and navigate
       localStorage.setItem('token', res.token)
       navigate('/')
     } catch (err) {
-      const errors = err.data.errors
-      errors.forEach(e => {
-        if (e.param === 'username') {
-          setUsernameErrText(e.msg)
+      console.error('Signup error:', err)
+      
+      // Log detailed error information
+      if (err.response) {
+        console.error('Response data:', err.response.data)
+        console.error('Status code:', err.response.status)
+        console.error('Headers:', err.response.headers)
+        
+        // Handle specific validation errors in response
+        if (err.response.data && err.response.data.errors) {
+          const serverErrors = err.response.data.errors
+          
+          serverErrors.forEach(error => {
+            if (error.param === 'username') {
+              setUsernameErrText(error.msg)
+            } else if (error.param === 'password') {
+              setPasswordErrText(error.msg)
+            } else if (error.param === 'confirmPassword') {
+              setConfirmPasswordErrText(error.msg)
+            } else if (error.param === 'role') {
+              setGeneralError(`Role error: ${error.msg}`)
+            }
+          })
+        } else if (err.response.data && err.response.data.message) {
+          // Handle general error message
+          setGeneralError(err.response.data.message)
+        } else {
+          setGeneralError('Validation failed. Please check your input and try again.')
         }
-        if (e.param === 'password') {
-          setPasswordErrText(e.msg)
-        }
-        if (e.param === 'confirmPassword') {
-          setConfirmPasswordErrText(e.msg)
-        }
-      })
+      } else if (err.request) {
+        console.error('Request made but no response received')
+        setGeneralError('No response from server. Please try again later.')
+      } else {
+        console.error('Error setting up request:', err.message)
+        setGeneralError('An error occurred during signup. Please try again later.')
+      }
+      
+      // Special handling for the data format in your specific error
+      if (err.data && err.data.errors) {
+        const serverErrors = err.data.errors
+        serverErrors.forEach(error => {
+          if (error.param === 'username') {
+            setUsernameErrText(error.msg)
+          } else if (error.param === 'password') {
+            setPasswordErrText(error.msg)
+          } else if (error.param === 'confirmPassword') {
+            setConfirmPasswordErrText(error.msg)
+          } else if (error.param === 'role') {
+            setGeneralError(`Role error: ${error.msg}`)
+          }
+        })
+      } else if (err.data && err.data.message) {
+        setGeneralError(err.data.message)
+      }
+    } finally {
       setLoading(false)
     }
   }
@@ -117,6 +181,23 @@ const Signup = () => {
         >
           Create Account
         </Typography>
+        
+        {/* General error message */}
+        {generalError && (
+          <Typography
+            color="error"
+            variant="body2"
+            sx={{
+              textAlign: 'center',
+              mb: 2,
+              p: 1,
+              backgroundColor: alpha('#f44336', 0.1),
+              borderRadius: '4px'
+            }}
+          >
+            {generalError}
+          </Typography>
+        )}
         
         <Box
           component='form'
@@ -207,6 +288,39 @@ const Signup = () => {
               }
             }}
           />
+          <FormControl 
+            fullWidth 
+            margin='normal'
+            disabled={loading}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': { borderColor: alpha(theme.lightBeige, 0.3) },
+                '&:hover fieldset': { borderColor: alpha(theme.lightBeige, 0.5) },
+                '&.Mui-focused fieldset': { borderColor: theme.warmBrown },
+                color: theme.lightBeige,
+              },
+              '& .MuiInputLabel-root': { 
+                color: alpha(theme.lightBeige, 0.7),
+                '&.Mui-focused': { color: theme.warmBrown }
+              },
+              '& .MuiSelect-icon': {
+                color: theme.lightBeige
+              }
+            }}
+          >
+            <InputLabel id="role-label">Role</InputLabel>
+            <Select
+              labelId="role-label"
+              id="role"
+              name="role"
+              value={role}
+              label="Role"
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <MenuItem value="assignee">Assignee</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
           <LoadingButton
             sx={{ 
               mt: 3, 

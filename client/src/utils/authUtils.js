@@ -10,6 +10,16 @@ const authUtils = {
     } catch {
       return false
     }
+  },
+  
+  isAdmin: (user) => {
+    return user && user.role === 'admin';
+  },
+  
+  canManageTask: (user, task) => {
+    if (!user || !task) return false;
+    return user.role === 'admin' || 
+           (task.assignee && task.assignee === user._id);
   }
 }
 
